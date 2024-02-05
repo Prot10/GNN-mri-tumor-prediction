@@ -15,6 +15,7 @@ from tqdm import tqdm
 from torch.nn.functional import max_pool2d
 from skimage.segmentation import slic
 import SimpleITK as sitk
+import logging
 from radiomics import featureextractor
 
 
@@ -698,13 +699,14 @@ class GenMRIDataset(Dataset):
             }
         }
 
+        logging.getLogger('radiomics').setLevel(logging.CRITICAL)
         extractor = featureextractor.RadiomicsFeatureExtractor(params)
         patches = []
 
         image_sitk = sitk.ReadImage(image_path)
         image_spacing = image_sitk.GetSpacing()
 
-        for mask in tqdm(mask_list):
+        for mask in mask_list:
 
             mask = np.where(mask != 0, 1, mask)
             mask_sitk = sitk.GetImageFromArray(mask)
@@ -725,7 +727,8 @@ class GenMRIDataset(Dataset):
                 features_array = np.array(feature_values)
                 patches.append(features_array)
             except:
-                print('\nEmpty mask\n')
+                pass
+                
 
         if len(patches) == 0:
             return None
@@ -742,9 +745,6 @@ class GenMRIDataset(Dataset):
             label_dir = os.path.join(self.directory, label)
             for image_name in tqdm(os.listdir(label_dir)):
                 image_path = os.path.join(label_dir, image_name)
-                print('\n\n', '#'*50)
-                print('#'*10, image_path, '#'*10)
-                print('#'*50, '\n\n')
                 mask_list = self.create_superpixels(image_path)
                 patches = self.create_patches(image_path, mask_list)
                 if patches is not None:
