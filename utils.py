@@ -691,16 +691,11 @@ class GenMRIDataset(Dataset):
 
 
     def create_patches(self, image_path, mask_list):
-        params = {
-            'imageType': {
-                'Original': {}, 
-                'LoG': {},
-                'Wavelet': {}
-            }
-        }
 
         logging.getLogger('radiomics').setLevel(logging.CRITICAL)
-        extractor = featureextractor.RadiomicsFeatureExtractor(params)
+        extractor = featureextractor.RadiomicsFeatureExtractor()
+        extractor.enableAllFeatures()
+        
         patches = []
 
         image_sitk = sitk.ReadImage(image_path)
